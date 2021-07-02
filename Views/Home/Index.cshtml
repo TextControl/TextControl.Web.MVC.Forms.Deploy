@@ -1,0 +1,62 @@
+﻿@model List<tx_mvc_forms_deploy.Models.Deployment>
+
+<a onclick="newDeployment()" class="btn btn-primary mt-2">New Deployment</a>
+
+<table class="table table-bordered mt-3">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Form Fields</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Deployment deployment in Model) {
+            <tr>
+                <td>@deployment.Username</td>
+                <td>
+                    @if (deployment.FormFields != null) {
+                        <table class="table table-bordered">
+                            @foreach (FormField field in deployment.FormFields) {
+                                <tr>
+                                    <td>@field.name</td>
+                                    <td>@field.value</td>
+                                </tr>
+                            }
+                        </table>
+                    }
+                </td>
+                <td>
+                    <a target="_blank" href="@Url.Action("complete", "home", new { username = deployment.Username })">Open</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+
+</table>
+
+@section Scripts {
+    <script type="text/javascript">
+        function newDeployment() {
+          
+            var serviceURL = "@Url.Action("NewDeployment", "Home")";
+
+            $.ajax({
+                type: "GET",
+                url: serviceURL,
+                success: successFunc,
+                error: errorFunc
+            });
+
+            function successFunc(data, status) {
+
+                location.reload();
+
+            }
+
+            function errorFunc() {
+                $('.alert-info').text("Oops! There was an error.").show().delay(5000).fadeOut();
+            }
+        }
+    </script>
+}

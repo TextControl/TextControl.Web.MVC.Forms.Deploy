@@ -1,0 +1,57 @@
+﻿@model CompleteModel
+
+@using TXTextControl.Web.MVC.DocumentViewer
+
+<div style="height: 600px;" class="mb-2">
+
+    @Html.TXTextControl().DocumentViewer(settings => {
+        settings.DocumentPath = "App_Data/health_form.tx";
+        settings.Dock = DocumentViewerSettings.DockStyle.Fill;
+    }).Render()
+
+</div>
+
+<button onclick="submitform()" type="button" class="btn btn-primary">Submit</button>
+
+<div class="alert alert-info mt-3" role="alert" style="display: none;"></div>
+
+@section Scripts {
+    <script type="text/javascript">
+        function submitform() {
+
+            // validate forms
+            var valid = TXDocumentViewer.forms.validate();
+
+            if (valid === false) { // not valid
+                $('.alert-info').text("Document contains invalid form fields.").show().delay(5000).fadeOut();
+                return;
+            }
+
+            // -> valid
+
+            // get the form values
+            var formsJson = JSON.stringify(TXDocumentViewer.forms.getValues());
+
+            // send values to controller
+            var serviceURL = "@Url.Action("FormValues", "Home", new { username = Model.Username })";
+
+            $.ajax({
+                type: "POST",
+                url: serviceURL,
+                contentType: 'application/json',
+                data: formsJson,
+                success: successFunc,
+                error: errorFunc
+            });
+
+            function successFunc(data, status) {
+                $('.alert-info').text("Thanks. Your document has been submitted!").show().delay(5000).fadeOut();
+                TXDocumentViewer.downloadDocument(TXDocumentViewer.StreamType.AdobePDF, true);
+            }
+
+            function errorFunc() {
+                $('.alert-info').text("Oops! There was an error.").show().delay(5000).fadeOut();
+            }
+        }
+    </script>
+}
